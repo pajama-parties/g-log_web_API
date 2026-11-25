@@ -1,0 +1,3 @@
+[submodule "src/database/schema"]
+	path = src/database/schema
+	url = https://github.com/pajama-parties/g-log_entities.git
