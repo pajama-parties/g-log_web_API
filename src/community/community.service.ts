@@ -42,7 +42,8 @@ export class CommunityService {
     if (query.cursor) qb.andWhere('p.id < :cursor', { cursor: query.cursor });
     if (query.q) {
       qb.leftJoin(UserProfile, 'u', 'u.userId = p.userId').andWhere(
-        '(p.title LIKE :q OR p.body LIKE :q OR p.crop LIKE :q OR u.nickname LIKE :q)',
+        // PostgreSQL의 LIKE는 대소문자를 구분하므로 ILIKE (MySQL utf8mb4_0900_ai_ci와 같은 동작)
+        '(p.title ILIKE :q OR p.body ILIKE :q OR p.crop ILIKE :q OR u.nickname ILIKE :q)',
         { q: `%${escapeLike(query.q)}%` },
       );
     }

@@ -16,7 +16,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }), // API/.env
-    DatabaseModule, // auth_db + service_db
+    DatabaseModule, // PostgreSQL (auth, service 스키마)
     AuthModule, // 전역 로그인 가드
     // 기능 모듈 (feature/* 브랜치에서 추가)
     SensorsModule, // /api/sensors (센서 하드웨어용, 센서 토큰 인증)

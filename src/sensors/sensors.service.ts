@@ -1,7 +1,6 @@
 import { ConflictException, GoneException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource, In, IsNull, Not } from 'typeorm';
-import { AUTH_CONNECTION } from '../config/database.config.js';
 import { DeviceCredential } from '../database/schema/entities/auth/device-credential.entity.js';
 import { DevicePairingCode } from '../database/schema/entities/service/device-pairing-code.entity.js';
 import { Device } from '../database/schema/entities/service/device.entity.js';
@@ -25,10 +24,7 @@ const MAX_BACKFILL_MS = 30 * 24 * 60 * 60 * 1000;
 
 @Injectable()
 export class SensorsService {
-  constructor(
-    @InjectDataSource() private readonly db: DataSource,
-    @InjectDataSource(AUTH_CONNECTION) private readonly authDb: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private readonly db: DataSource) {}
 
   /**
    * 센서 등록: 등록 코드로 화분과 연결하고 센서 토큰 발급.
@@ -76,8 +72,8 @@ export class SensorsService {
       pairing.deviceId = device.id;
       await em.save(pairing);
 
-      // auth_db는 다른 DB라 같은 트랜잭션으로 못 묶음 → 커밋 직전에 저장해서, 실패하면 위 변경도 롤백
-      await this.authDb
+      // 센서 토큰(auth 스키마)도 같은 트랜잭션: 하나라도 실패하면 등록 전체를 되돌림
+      await em
         .getRepository(DeviceCredential)
         .upsert({ deviceId: device.id, apiKeyHash: hashSensorToken(token), issuedAt: now, revokedAt: null }, ['deviceId']);
 
@@ -89,7 +85,7 @@ export class SensorsService {
   async authenticate(authorization: string | undefined): Promise<number> {
     const token = bearerToken(authorization);
     const credential = token
-      ? await this.authDb.getRepository(DeviceCredential).findOne({ where: { apiKeyHash: hashSensorToken(token), revokedAt: IsNull() } })
+      ? await this.db.getRepository(DeviceCredential).findOne({ where: { apiKeyHash: hashSensorToken(token), revokedAt: IsNull() } })
       : null;
     if (!credential) {
       throw new UnauthorizedException({ code: 'INVALID_SENSOR_TOKEN', message: '센서 토큰이 없거나 올바르지 않습니다. 센서를 다시 등록해 주세요.' });
