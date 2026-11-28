@@ -7,7 +7,7 @@ export function judgeMoisture(value: number, dryThreshold: number, wetThreshold:
   return 'OK';
 }
 
-/** DB DATETIME은 초 단위 (MySQL은 소수 초를 반올림하므로 미리 버림) → 재전송 중복 비교도 초 단위 */
+/** 측정 시각은 초 단위로 저장 (센서마다 붙는 밀리초를 버림) → 재전송 중복 비교도 초 단위 */
 export function toWholeSecond(date: Date): Date {
   return new Date(Math.floor(date.getTime() / 1000) * 1000);
 }

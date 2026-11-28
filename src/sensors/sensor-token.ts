@@ -8,7 +8,7 @@ export function generateSensorToken(): string {
   return PREFIX + randomBytes(32).toString('base64url');
 }
 
-/** auth_db.device_credentials.api_key_hash (SHA-256 hex, 64자) */
+/** auth.device_credentials.api_key_hash (SHA-256 hex, 64자) */
 export function hashSensorToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
 }

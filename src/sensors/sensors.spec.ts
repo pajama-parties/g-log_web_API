@@ -16,7 +16,7 @@ describe('judgeMoisture', () => {
 });
 
 describe('toWholeSecond', () => {
-  it('소수 초를 버림 (MySQL 반올림으로 1초 밀리는 것 방지)', () => {
+  it('소수 초를 버림 (재전송 중복을 초 단위로 비교)', () => {
     expect(toWholeSecond(new Date('2026-11-25T00:00:00.999Z')).toISOString()).toBe('2026-11-25T00:00:00.000Z');
   });
 });
