@@ -7,6 +7,7 @@ import { SensorsModule } from './sensors/sensors.module.js';
 import { PotsModule } from './pots/pots.module.js';
 import { ReadingsModule } from './readings/readings.module.js';
 import { PotRangeModule } from './pot-range/pot-range.module.js';
+import { NoticesModule } from './notices/notices.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -20,6 +21,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     PotsModule, // /api/pots
     ReadingsModule, // /api/pots/{potId}/readings (그래프)
     PotRangeModule, // PUT /api/pots/{potId}/range (경보 기준)
+    NoticesModule, // /api/notices
     // 트레이스·로그·오류 수집. `npx @nestjs/observe link` 로 .env에 키를 넣으면 켜짐
     ObserveModule.forRoot({
       appKey: process.env.OBSERVE_APP_KEY ?? 'YOUR_APP_KEY',
