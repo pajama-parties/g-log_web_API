@@ -1,16 +1,29 @@
-import { StandardSchemaValidationPipe, type INestApplication } from '@nestjs/common';
+import { StandardSchemaValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ACCESS_COOKIE } from './auth/auth.constants.js';
 import { SENSOR_TOKEN_AUTH } from './sensors/sensors.controller.js';
+import { uploadRoot, UPLOADS_URL_PREFIX } from './community/photo-storage.js';
 
 /** main.ts와 e2e 테스트가 같은 설정을 쓰도록 모아 둠 */
-export function configureApp(app: INestApplication) {
+export function configureApp(app: NestExpressApplication) {
   app.setGlobalPrefix('api');
   // @Body({ schema: zod스키마 }) 검사. 실패하면 400 + message 배열
   app.useGlobalPipes(new StandardSchemaValidationPipe());
 
+  // 올린 사진: uploads/ 폴더를 /api/uploads/ 로 (로그인 없이 볼 수 있음 — 카카오톡 공유 미리보기용)
+  const config = app.get(ConfigService);
+  app.useStaticAssets(uploadRoot((k) => config.get<string>(k)), {
+    prefix: `${UPLOADS_URL_PREFIX}/`,
+    dotfiles: 'deny',
+    index: false,
+    fallthrough: false,
+    setHeaders: (res) => res.setHeader('X-Content-Type-Options', 'nosniff'),
+  });
+
   // API 문서: http://127.0.0.1:3001/api/docs (JSON: /api/docs-json)
-  const config = new DocumentBuilder()
+  const docs = new DocumentBuilder()
     .setTitle('g-log 서비스 API')
     .setDescription(
       [
@@ -29,5 +42,5 @@ export function configureApp(app: INestApplication) {
     .addBearerAuth()
     .addBearerAuth({ type: 'http', scheme: 'bearer', description: '센서 토큰 (POST /sensors/register 응답의 token)' }, SENSOR_TOKEN_AUTH)
     .build();
-  SwaggerModule.setup('api/docs', app, () => SwaggerModule.createDocument(app, config));
+  SwaggerModule.setup('api/docs', app, () => SwaggerModule.createDocument(app, docs));
 }
